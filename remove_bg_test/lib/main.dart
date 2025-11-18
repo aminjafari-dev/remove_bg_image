@@ -109,9 +109,9 @@ class _BackgroundRemoverPageState extends State<BackgroundRemoverPage> {
           '1. The Python server is running (python server.py)\n'
           '2. The server URL is correct in background_removal_service.dart\n'
           '3. Your device/emulator can reach the server\n\n'
-          'For Android emulator: http://10.0.2.2:5000\n'
-          'For iOS simulator: http://localhost:5000\n'
-          'For physical device: Use your computer\'s IP address',
+          'For Android emulator: http://10.0.2.2:5045\n'
+          'For iOS simulator: http://localhost:5045\n'
+          'For physical device: Use your computer\'s IP address (port 5045)',
         );
         return;
       }

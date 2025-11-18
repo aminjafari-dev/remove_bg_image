@@ -41,11 +41,11 @@ pip install -r requirements.txt
 python server.py
 ```
 
-The server will start on `http://localhost:5000`
+The server will start on `http://localhost:5045`
 
 ### 2. Configure Flutter App
 
-The Flutter app is pre-configured for Android emulator (`http://10.0.2.2:5000`).
+The Flutter app is pre-configured for Android emulator (`http://10.0.2.2:5045`).
 
 For iOS Simulator or physical devices, update the server URL in:
 ```

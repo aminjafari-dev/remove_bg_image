@@ -41,7 +41,7 @@ def remove_background():
     Returns: Processed image with background removed (PNG format)
     
     Example usage:
-        curl -X POST http://localhost:5000/remove-background \
+        curl -X POST http://localhost:5045/remove-background \
              -F "image=@path/to/image.jpg"
     """
     try:
@@ -130,14 +130,17 @@ def remove_background_base64():
 
 
 if __name__ == '__main__':
-    print("🚀 Starting Background Removal Server...")
-    print("📍 Server will be available at: http://localhost:5000")
-    print("📡 Health check: http://localhost:5000/health")
-    print("🖼️  Remove background: http://localhost:5000/remove-background")
-    print("\n⚠️  Make sure your Flutter app is configured to connect to this server!")
-    print("   For Android emulator, use: http://10.0.2.2:5000")
-    print("   For iOS simulator, use: http://localhost:5000")
-    print("   For physical device, use your computer's IP address (e.g., http://192.168.1.100:5000)\n")
+    # Use port 5045 to avoid conflict with macOS AirPlay Receiver on port 5000
+    PORT = 5045
     
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    print("🚀 Starting Background Removal Server...")
+    print(f"📍 Server will be available at: http://localhost:{PORT}")
+    print(f"📡 Health check: http://localhost:{PORT}/health")
+    print(f"🖼️  Remove background: http://localhost:{PORT}/remove-background")
+    print("\n⚠️  Make sure your Flutter app is configured to connect to this server!")
+    print(f"   For Android emulator, use: http://10.0.2.2:{PORT}")
+    print(f"   For iOS simulator, use: http://localhost:{PORT}")
+    print(f"   For physical device, use your computer's IP address (e.g., http://192.168.1.100:{PORT})\n")
+    
+    app.run(host='0.0.0.0', port=PORT, debug=True)
 

@@ -35,30 +35,32 @@ python server.py
 You should see output like:
 ```
 🚀 Starting Background Removal Server...
-📍 Server will be available at: http://localhost:5000
-📡 Health check: http://localhost:5000/health
-🖼️  Remove background: http://localhost:5000/remove-background
+📍 Server will be available at: http://localhost:5045
+📡 Health check: http://localhost:5045/health
+🖼️  Remove background: http://localhost:5045/remove-background
 ```
 
-The server will start on `http://localhost:5000` by default.
+**Note:** The server uses port **5045** by default to avoid conflicts with macOS AirPlay Receiver, which commonly uses port 5000.
+
+The server will start on `http://localhost:5045` by default.
 
 ## Server Endpoints
 
 ### Health Check
-- **URL**: `http://localhost:5000/health`
+- **URL**: `http://localhost:5045/health`
 - **Method**: GET
 - **Description**: Check if the server is running
 - **Response**: `{"status": "ok", "message": "Background removal server is running"}`
 
 ### Remove Background (File Upload)
-- **URL**: `http://localhost:5000/remove-background`
+- **URL**: `http://localhost:5045/remove-background`
 - **Method**: POST
 - **Content-Type**: `multipart/form-data`
 - **Field**: `image` (file)
 - **Response**: PNG image with background removed
 
 ### Remove Background (Base64)
-- **URL**: `http://localhost:5000/remove-background-base64`
+- **URL**: `http://localhost:5045/remove-background-base64`
 - **Method**: POST
 - **Content-Type**: `application/json`
 - **Body**: `{"image": "data:image/jpeg;base64,..."}`
@@ -67,7 +69,7 @@ The server will start on `http://localhost:5000` by default.
 ## Flutter App Configuration
 
 ### For Android Emulator
-The Flutter app is configured to use `http://10.0.2.2:5000` by default, which is the special IP address that Android emulator uses to access the host machine's localhost.
+The Flutter app is configured to use `http://10.0.2.2:5045` by default, which is the special IP address that Android emulator uses to access the host machine's localhost.
 
 ### For iOS Simulator
 If you're using iOS Simulator, you need to update the server URL in:
@@ -77,7 +79,7 @@ remove_bg_test/lib/services/background_removal_service.dart
 
 Change the `baseUrl` to:
 ```dart
-static const String baseUrl = 'http://localhost:5000';
+static const String baseUrl = 'http://localhost:5045';
 ```
 
 ### For Physical Device
@@ -90,7 +92,7 @@ If you're testing on a physical device, you need to:
 
 2. Update the server URL in `background_removal_service.dart`:
    ```dart
-   static const String baseUrl = 'http://YOUR_IP_ADDRESS:5000';
+   static const String baseUrl = 'http://YOUR_IP_ADDRESS:5045';
    ```
 
 3. Make sure your device and computer are on the same Wi-Fi network
@@ -107,10 +109,10 @@ You can test the server using curl:
 
 ```bash
 # Health check
-curl http://localhost:5000/health
+curl http://localhost:5045/health
 
 # Remove background (replace with your image path)
-curl -X POST http://localhost:5000/remove-background \
+curl -X POST http://localhost:5045/remove-background \
      -F "image=@path/to/your/image.jpg" \
      --output processed_image.png
 ```
@@ -118,15 +120,17 @@ curl -X POST http://localhost:5000/remove-background \
 ## Troubleshooting
 
 ### Server won't start
-- Make sure port 5000 is not already in use
+- Make sure port 5045 is not already in use
+- **macOS users:** If you see "Address already in use" on port 5000, this is normal - the server now uses port 5045 to avoid conflicts with AirPlay Receiver
 - Check that all dependencies are installed: `pip list`
 - Verify Python version: `python --version` (should be 3.8+)
 
 ### Flutter app can't connect
-- Verify server is running: Open `http://localhost:5000/health` in a browser
-- Check the server URL in `background_removal_service.dart` matches your setup
+- Verify server is running: Open `http://localhost:5045/health` in a browser
+- Check the server URL in `background_removal_service.dart` matches your setup (should be port 5045)
 - For physical devices, ensure both devices are on the same network
-- Check firewall settings - port 5000 might be blocked
+- Check firewall settings - port 5045 might be blocked
+- Make sure the server is actually running (check terminal output)
 
 ### Background removal fails
 - Check server logs for error messages
