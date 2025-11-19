@@ -70,9 +70,7 @@ class _AuthPageState extends State<AuthPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_isLoginMode ? 'Login' : 'Register'),
-      ),
+      appBar: AppBar(title: Text(_isLoginMode ? 'Login' : 'Register')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -149,4 +147,3 @@ class _AuthPageState extends State<AuthPage> {
     );
   }
 }
-

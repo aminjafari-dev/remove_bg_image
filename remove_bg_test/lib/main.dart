@@ -174,9 +174,9 @@ class _BackgroundRemoverPageState extends State<BackgroundRemoverPage> {
           IconButton(
             icon: const Icon(Icons.person),
             onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const AuthPage()),
-              );
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const AuthPage()));
             },
           ),
         ],

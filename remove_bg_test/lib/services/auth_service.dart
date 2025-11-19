@@ -7,7 +7,7 @@ import 'background_removal_service.dart';
 /// Extremely small helper for hitting the Flask auth endpoints.
 class AuthService {
   AuthService({String? customBaseUrl})
-      : baseUrl = customBaseUrl ?? BackgroundRemovalService.baseUrl;
+    : baseUrl = customBaseUrl ?? BackgroundRemovalService.baseUrl;
 
   final String baseUrl;
 
@@ -117,4 +117,3 @@ class AuthService {
     print(buffer.toString());
   }
 }
-
