@@ -58,8 +58,11 @@ class BackgroundRemovalService {
       print('Check if server is running and accessible');
       return false;
     } catch (e) {
-      print('Error checking server health: $e');
-      print('Error type: ${e.runtimeType}');
+      _logServerError(
+        context: 'checkServerHealth',
+        message: 'Unexpected error while checking server health.',
+        error: e,
+      );
       // Other errors
       return false;
     }
@@ -112,11 +115,24 @@ class BackgroundRemovalService {
       } else {
         // Read error message from response
         final errorResponse = await streamedResponse.stream.bytesToString();
+        _logServerError(
+          context: 'removeBackground',
+          message:
+              'Server responded with a non-success status code during stream upload.',
+          error: 'Status: ${streamedResponse.statusCode}, Body: $errorResponse',
+        );
         throw Exception(
           'Server error: ${streamedResponse.statusCode} - $errorResponse',
         );
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      _logServerError(
+        context: 'removeBackground',
+        message:
+            'Failed to complete background removal request. Verify server logs for more details.',
+        error: e,
+        stackTrace: stackTrace,
+      );
       throw Exception('Failed to remove background: $e');
     }
   }
@@ -163,13 +179,69 @@ class BackgroundRemovalService {
           // Decode base64 to bytes
           return base64Decode(base64Data);
         } else {
+          _logServerError(
+            context: 'removeBackgroundBase64',
+            message:
+                'Server returned a success HTTP status but indicated a failure in payload.',
+            error: responseData['error'],
+          );
           throw Exception('Server returned error: ${responseData['error']}');
         }
       } else {
+        _logServerError(
+          context: 'removeBackgroundBase64',
+          message: 'Server responded with non-success HTTP status code.',
+          error:
+              'Status: ${response.statusCode}, Body: ${response.body.toString()}',
+        );
         throw Exception('Server error: ${response.statusCode}');
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      _logServerError(
+        context: 'removeBackgroundBase64',
+        message:
+            'Failed to complete base64 background removal request. Inspect server logs.',
+        error: e,
+        stackTrace: stackTrace,
+      );
       throw Exception('Failed to remove background: $e');
     }
+  }
+
+  /// Helper logger to standardize error outputs from server interactions.
+  ///
+  /// Example:
+  /// ```dart
+  /// _logServerError(
+  ///   context: 'removeBackground',
+  ///   message: 'Server responded with 500',
+  ///   error: responseBody,
+  /// );
+  /// ```
+  void _logServerError({
+    required String context,
+    required String message,
+    Object? error,
+    StackTrace? stackTrace,
+  }) {
+    final buffer = StringBuffer()
+      ..writeln('--- BackgroundRemovalService Error Log ---')
+      ..writeln('Context: $context')
+      ..writeln('Message: $message');
+
+    if (error != null) {
+      buffer.writeln('Error: $error');
+    }
+
+    if (stackTrace != null) {
+      buffer.writeln('StackTrace: $stackTrace');
+    }
+
+    buffer
+      ..writeln('Timestamp: ${DateTime.now().toIso8601String()}')
+      ..writeln('--------------------------------------------');
+
+    // ignore: avoid_print
+    print(buffer.toString());
   }
 }

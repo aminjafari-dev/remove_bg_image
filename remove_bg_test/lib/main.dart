@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'auth_page.dart';
 import 'services/background_removal_service.dart';
 
 void main() {
@@ -169,6 +170,16 @@ class _BackgroundRemoverPageState extends State<BackgroundRemoverPage> {
       appBar: AppBar(
         title: const Text('Background Remover'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const AuthPage()),
+              );
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
