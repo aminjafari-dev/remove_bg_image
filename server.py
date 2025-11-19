@@ -10,9 +10,16 @@ import io
 import os
 from datetime import datetime
 
+from typing import Optional
+
+from user_service import UserService
+
 app = Flask(__name__)
 # Enable CORS for Flutter app
 CORS(app)
+
+# Instantiate user service for authentication and storage
+user_service = UserService()
 
 # Configuration
 UPLOAD_FOLDER = "uploads"
@@ -23,6 +30,22 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 
+def _extract_token(auth_header: Optional[str]) -> Optional[str]:
+    """
+    Helper to parse `Authorization: Bearer <token>` values.
+
+    Example:
+        >>> _extract_token("Bearer 123")
+        "123"
+    """
+    if not auth_header:
+        return None
+    parts = auth_header.split(" ")
+    if len(parts) == 2 and parts[0].lower() == "bearer":
+        return parts[1]
+    return None
+
+
 @app.route('/health', methods=['GET'])
 def health_check():
     """
@@ -30,6 +53,116 @@ def health_check():
     Returns: JSON response with status
     """
     return jsonify({"status": "ok", "message": "Background removal server is running"})
+
+
+@app.route('/auth/register', methods=['POST'])
+def register_user():
+    """
+    Register a user by sending JSON with username/password.
+
+    Example:
+        curl -X POST http://localhost:5045/auth/register \
+            -H "Content-Type: application/json" \
+            -d '{"username": "demo", "password": "secret123"}'
+    """
+    data = request.get_json(force=True, silent=True) or {}
+
+    username = data.get("username", "").strip()
+    password = data.get("password", "")
+
+    if not username or not password:
+        return jsonify({"success": False, "message": "Username and password are required."}), 400
+
+    created = user_service.register_user(username=username, password=password)
+    if not created:
+        return jsonify({"success": False, "message": "Username already exists. Choose another."}), 409
+
+    return jsonify({"success": True, "message": "User registered successfully."})
+
+
+@app.route('/auth/login', methods=['POST'])
+def login_user():
+    """
+    Login endpoint returning a bearer token for subsequent calls.
+
+    Example:
+        curl -X POST http://localhost:5045/auth/login \
+            -H "Content-Type: application/json" \
+            -d '{"username": "demo", "password": "secret123"}'
+    """
+    data = request.get_json(force=True, silent=True) or {}
+    username = data.get("username", "").strip()
+    password = data.get("password", "")
+
+    if not username or not password:
+        return jsonify({"success": False, "message": "Username and password are required."}), 400
+
+    token = user_service.login_user(username=username, password=password)
+    if not token:
+        return jsonify({"success": False, "message": "Invalid credentials."}), 401
+
+    return jsonify({"success": True, "token": token})
+
+
+@app.route('/users/images', methods=['POST'])
+def upload_user_image():
+    """
+    Upload raw images for the authenticated user.
+
+    Requires:
+        - Authorization: Bearer <token> header obtained from /auth/login
+        - multipart/form-data 'image' field containing the file
+
+    Example:
+        curl -X POST http://localhost:5045/users/images \
+            -H "Authorization: Bearer <token>" \
+            -F "image=@/path/photo.png"
+    """
+    token = _extract_token(request.headers.get("Authorization"))
+    user = user_service.get_user_by_token(token)
+
+    if not user:
+        return jsonify({"success": False, "message": "Unauthorized. Login first."}), 401
+
+    if 'image' not in request.files:
+        return jsonify({"success": False, "message": "No image field provided."}), 400
+
+    file = request.files['image']
+    stored_path = user_service.save_user_image(
+        user_id=user["id"],
+        username=user["username"],
+        file_storage=file,
+    )
+
+    if not stored_path:
+        return jsonify({"success": False, "message": "Failed to save image."}), 400
+
+    return jsonify(
+        {
+            "success": True,
+            "message": "Image saved for user.",
+            "stored_path": stored_path,
+        }
+    )
+
+
+@app.route('/users/images', methods=['GET'])
+def list_user_images():
+    """
+    List metadata for all images that belong to the logged-in user.
+
+    Example:
+        curl -X GET http://localhost:5045/users/images \
+            -H "Authorization: Bearer <token>"
+    """
+    token = _extract_token(request.headers.get("Authorization"))
+    user = user_service.get_user_by_token(token)
+
+    if not user:
+        return jsonify({"success": False, "message": "Unauthorized. Login first."}), 401
+
+    images = user_service.list_user_images(user_id=user["id"])
+    return jsonify({"success": True, "images": images})
 
 
 @app.route('/remove-background', methods=['POST'])

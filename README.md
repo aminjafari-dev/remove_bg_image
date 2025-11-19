@@ -70,12 +70,20 @@ flutter run
 - ✅ Server health check endpoint
 - ✅ Support for file upload and base64 encoding
 - ✅ Cross-platform (Android, iOS, Web)
+- ✅ Lightweight username/password authentication with SQLite
+- ✅ Per-user image storage and listing helpers
 
 ## API Endpoints
 
 - `GET /health` - Check server status
 - `POST /remove-background` - Remove background (multipart/form-data)
 - `POST /remove-background-base64` - Remove background (JSON with base64)
+- `POST /auth/register` - Register a user. Body: `{"username": "...", "password": "..."}`.
+- `POST /auth/login` - Login and obtain a bearer token. Body identical to register.
+- `POST /users/images` - Upload an image for the logged-in user. Headers: `Authorization: Bearer <token>`, Body: multipart `image`.
+- `GET /users/images` - List all images that belong to the authenticated user.
+
+The auth-related endpoints use a single-file SQLite database stored in `data/users.db`. Uploaded files are organized inside `uploads/user_uploads/<username>` so it is always clear which assets belong to each user.
 
 ## Technologies
 
